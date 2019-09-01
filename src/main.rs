@@ -3,11 +3,11 @@ extern crate boss;
 use boss::CSPStreamWorkerPool;
 use std::io;
 use std::io::BufRead;
+use std::io::Write;
+use std::path::PathBuf;
 use std::process::Command;
 use std::str;
 use std::thread;
-
-use std::path::PathBuf;
 use structopt::StructOpt;
 
 #[derive(Debug, StructOpt)]
@@ -68,7 +68,8 @@ fn main() -> io::Result<()> {
     // an instance of sam running on the same terminal to load the named files.)
     print!("B");
     for r in rv {
-        print!(" {}", r)
+        print!(" {}", r);
+        io::stdout().flush().unwrap();
     }
     Ok(())
 }

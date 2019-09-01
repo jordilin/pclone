@@ -36,7 +36,7 @@ fn gitclone(d: Data) -> String {
     match output {
         Ok(outres) => {
             if outres.status.success() {
-                format!("Cloned repo: {}", target_name)
+                format!("{}", target_name)
             } else {
                 format!("Failed {:?}", str::from_utf8(&outres.stderr).unwrap())
             }
@@ -63,8 +63,12 @@ fn main() -> io::Result<()> {
         }
         boss.finish();
     });
+    // Allows to middle click (B dir0 dir1) and load the directories into acme
+    // editor. See sam(1) line :451 (B is a shell-level command that causes
+    // an instance of sam running on the same terminal to load the named files.)
+    print!("B");
     for r in rv {
-        println!("{}", r)
+        print!(" {}", r)
     }
     Ok(())
 }

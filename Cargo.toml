@@ -8,3 +8,4 @@ edition = "2018"
 
 [dependencies]
 boss = { git = "https://github.com/jordilin/boss" }
+structopt = "0.3.0"

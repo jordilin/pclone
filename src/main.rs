@@ -7,13 +7,36 @@ use std::process::Command;
 use std::str;
 use std::thread;
 
-fn gitclone(url: String) -> String {
-    let output = Command::new("git").arg("clone").arg(&url).output();
+use std::path::PathBuf;
+use structopt::StructOpt;
+
+#[derive(Debug, StructOpt)]
+#[structopt(name = "pclone", about = "parallel git clone")]
+struct Opt {
+    /// Directory to clone to
+    #[structopt(parse(from_os_str))]
+    dir: PathBuf,
+}
+
+#[derive(Clone)]
+struct Data {
+    url: String,
+    dir: PathBuf,
+}
+
+fn gitclone(d: Data) -> String {
+    let fields: Vec<&str> = d.url.split('/').collect();
+    let name = fields[fields.len() - 1];
+    let target_name = format!("{}/{}", d.dir.to_str().unwrap(), name);
+    let output = Command::new("git")
+        .arg("clone")
+        .arg(&d.url)
+        .arg(&target_name)
+        .output();
     match output {
         Ok(outres) => {
             if outres.status.success() {
-                // TODO path to the filesystem for quick rightclick
-                format!("Cloned repo {}", url)
+                format!("Cloned repo: {}", target_name)
             } else {
                 format!("Failed {:?}", str::from_utf8(&outres.stderr).unwrap())
             }
@@ -23,6 +46,7 @@ fn gitclone(url: String) -> String {
 }
 
 fn main() -> io::Result<()> {
+    let opt = Opt::from_args();
     let boss = CSPStreamWorkerPool::new(None, Some(4), gitclone);
     let rv = boss.clone();
     let stdin = io::stdin();
@@ -31,7 +55,11 @@ fn main() -> io::Result<()> {
 
     thread::spawn(move || {
         for url in urls {
-            boss.send_data(url);
+            let d = Data {
+                url: url,
+                dir: opt.dir.clone(),
+            };
+            boss.send_data(d);
         }
         boss.finish();
     });

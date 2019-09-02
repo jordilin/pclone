@@ -36,7 +36,7 @@ fn gitclone(d: Data) -> String {
     match output {
         Ok(outres) => {
             if outres.status.success() {
-                format!("{}", target_name)
+                target_name.to_string()
             } else {
                 format!("Failed {:?}", str::from_utf8(&outres.stderr).unwrap())
             }
@@ -56,7 +56,7 @@ fn main() -> io::Result<()> {
     thread::spawn(move || {
         for url in urls {
             let d = Data {
-                url: url,
+                url,
                 dir: opt.dir.clone(),
             };
             boss.send_data(d);
